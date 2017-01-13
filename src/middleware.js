@@ -9,7 +9,7 @@ const error = require('../util/server-error')
 
 const PROJECT_SRC = path.join(__dirname, '..')
 const middlewares = {}
-const debug = require('debug')('qieqie')
+const debug = require('debug')('kails')
 
 function get_middleware (id) {
   if (id in middlewares) {

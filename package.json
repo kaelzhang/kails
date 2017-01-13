@@ -1,7 +1,7 @@
 {
   "name": "kails",
   "version": "1.0.0",
-  "description": "kails",
+  "description": "Koa 2+ on Rails.",
   "main": "index.js",
   "scripts": {
     "build": "babel src --out-dir lib",

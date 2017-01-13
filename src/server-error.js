@@ -1,6 +1,0 @@
-
-
-
-const {
-  debug
-} = require('../config')

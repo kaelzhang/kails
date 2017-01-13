@@ -1,33 +1,40 @@
-module.exports = () => new Promise((resolve, reject) => {
-  waterline.initialize(createWaterLineConfig(), (err, ontology) => {
-    if (err) {
-      console.error(`Fails to connect to database: ${err}`)
-      process.exit()
-    }
+// Create database connections
+module.exports = (connections, models) => new Promise((resolve, reject) => {
+  const waterline = new Waterline()
 
-    resolve(ontology)
+  Object.keys(models).forEach((name) => {
+    load(waterline, models[name])
   })
+
+  waterline.initialize(
+    create_waterline_config(connections),
+    (err, ontology) => {
+      if (err) {
+        console.error(`Fails to connect to database: ${err}`)
+        process.exit()
+      }
+
+      resolve(ontology)
+    }
+  )
 })
 
-const connection_config = require('../config').connection
 
 const Waterline = require('waterline')
-const waterline = new Waterline()
 
 // We have to load all schemas
 // TODO
 // Load connections dynamically.
-const user = require('../schema/db/user')
-const chat = require('../schema/db/chat')
+// const user = require('../schema/db/user')
+// const chat = require('../schema/db/chat')
 
-load(user)
-load(chat)
+// load(user)
+// load(chat)
 
 
-function createWaterLineConfig () {
-  const adapters = {}
+function create_waterline_config (connection_config) {
   const connections = {}
-
+  const adapters = {}
   const adapter_list = []
 
   Object.keys(connection_config).forEach((name) => {
@@ -64,7 +71,7 @@ function createWaterLineConfig () {
 }
 
 
-function load ({
+function load_model (waterline, {
   connection = 'default',
   models
 }) {
