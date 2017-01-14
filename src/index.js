@@ -29,7 +29,7 @@ module.exports = (options) => {
 // })
 
 
-const load_config = require('./config')
+const Context = require('./context')
 
 class Kails {
   constructor ({
@@ -39,12 +39,8 @@ class Kails {
   }) {
 
     this._root = root
+    this._context = new Context(root)
   }
-
-  config (config) {
-    return this._config = config
-  }
-
 
   // TODO
   // preset () {
@@ -58,36 +54,12 @@ class Kails {
 
   launch () {
     return this._create()
-    .then(app => {
+  }
+
+  _create () {
+    return this._context.create()
+    .then((context) => {
 
     })
   }
-
-  async _create () {
-    const config = this._config || await load_config(this._root)
-
-  }
-
-
-}
-
-
-
-const ontology = {}
-function NOOP () {}
-
-// Model
-///////////////////////////////////////////////////
-
-function model (name) {
-  const model = ontology.collections[name]
-
-  return model
-}
-
-model.set_connection = ({
-  collections
-}) => {
-  ontology.collections = collections
-  exports.set_connection = NOOP
 }
