@@ -28,7 +28,7 @@ module.exports = (options) => {
 
 
 const Context = require('./context')
-const Middleware = require('./middleware')
+const Router = require('./router')
 const Koa = require('koa')
 
 class Kails {
@@ -40,7 +40,7 @@ class Kails {
 
     this._root = root
     this._context = new Context(root)
-    this._middleware = null
+    this._router = null
     this._app = new Koa
   }
 
@@ -62,7 +62,15 @@ class Kails {
   _create () {
     return this._context.create()
     .then((context) => {
-      this._middleware = new Middleware(this._root, context)
+      new Router(this._root, context)
+      .apply_routes()
+      .apply(this._app)
+
+      return new Promise((resolve) => {
+        this._app.listen(this._context.config.port, () => {
+          resolve()
+        })
+      })
     })
   }
 }

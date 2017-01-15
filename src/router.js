@@ -1,42 +1,65 @@
-module.exports = function ({middlewares = [], routes}) {
-  const router = new Router()
-  // apply_middlewares(router, middlewares)
-  apply_routes(router, routes, middlewares)
-  return router
-}
-
 const Router = require('koa-router')
-const {apply_middlewares, apply_action} = require('./middleware')
+const Middleware = require('./middleware')
 const path = require('path')
+const {fail} = require('./util')
 
-function apply_routes (router, routes, common_middlewares) {
-  Object.keys(routes).forEach((location) => {
-    let [
-      method,
-      pathname
-    ] = location.split(' ')
 
-    const config = routes[location]
-    const {
-      action,
-      auth = true,
-      middlewares = []
+class Router {
+  constructor (root, context) {
+    this._router = new Router()
+    this._root = root
+    tihs._context = context
+    this._middleware = new Middleware(root, context)
+  }
 
-    } = typeof config === 'string'
-      ? {
-        action: config
-      }
-      : config
+  apply_routes () {
+    const common_middlewares = this._context.config.middlewares || []
+    const routes_file = path.join(this._root, 'routes')
 
-    if (auth) {
-      middlewares.unshift('need-auth')
+    let routes
+    try {
+      routes = require(routes_file)
+    } catch (e) {
+      fail(e)
     }
 
-    method = method.toLowerCase()
+    Object.keys(routes).forEach((location) => {
+      let [
+        method,
+        pathname
+      ] = location.split(' ')
 
-    const m = [].concat(common_middlewares, middlewares)
+      const config = routes[location]
+      const {
+        action,
+        auth = true,
+        middlewares = []
 
-    apply_middlewares(router, m, method, pathname)
-    apply_action(router, action, method, pathname)
-  })
+      } = typeof config === 'string'
+        ? {
+          action: config
+        }
+        : config
+
+      if (auth) {
+        middlewares.unshift('need-auth')
+      }
+
+      method = method.toLowerCase()
+
+      ;[].concat(common_middlewares, middlewares).forEach((middleware) => {
+        this._middleware.apply_middleware(router, middleware, method, pathname)
+      })
+
+      this._middleware.apply_action(router, action, method, pathname)
+    })
+
+    return this
+  }
+
+  apply (app) {
+    app.use(this._router.routes())
+  }
 }
+
+module.exports = Router
