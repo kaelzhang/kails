@@ -1,117 +1,108 @@
-module.exports = {
-  apply_middlewares,
-  apply_action
-}
-
 const path = require('path')
+const util = require('util')
 const fail = require('../util/fail')
 const error = require('../util/server-error')
 
 const PROJECT_SRC = path.join(__dirname, '..')
 const middlewares = {}
-const debug = require('debug')('kails')
 
-function get_middleware (id) {
-  if (id in middlewares) {
-    return middlewares[id]
+
+class Middleware {
+  constructor (root, context) {
+    this._root = root
+    this._cache = {}
   }
 
-  const filename = path.join(PROJECT_SRC, 'middleware', id)
-  let middleware
+  apply_middleware (router, id, method = 'use', pathname) {
+    const middleware = util.isFunction(id)
+      ? id
+      : this._get(id)
 
-  try {
-    middleware = require(filename)
-  } catch (e) {
-    fail(`Fails to load middleware "${id}": ${e.stack || e}`)
+    if (pathname) {
+      router[method](pathname, middleware)
+    } else {
+      router[method](middleware)
+    }
   }
 
-  if (typeof middleware !== 'function') {
-    fail(`Middleware "${id}" is should be a function.`)
+  apply_action (router, action, method, pathname) {
+    action = get_action_handler(action)
+    router[method](pathname, wrap_action(action))
   }
 
-  return middlewares[id] = middleware
-}
+  _get (id) {
+    if (id in this._cache) {
+      return this._cache[id]
+    }
 
+    const filename = path.join(PROJECT_SRC, 'middleware', id)
+    let middleware
 
-// @param {Array} middlewares
-function apply_middleware (router, id, method = 'use', pathname) {
-  const middleware = typeof id === 'function'
-    ? id
-    : get_middleware(id)
-
-  if (pathname) {
-    router[method](pathname, middleware)
-  } else {
-    router[method](middleware)
-  }
-}
-
-
-function apply_middlewares (router, ids, method, pathname) {
-  ids.forEach((id) => {
-    apply_middleware(router, id, method, pathname)
-  })
-}
-
-
-function get_action_handler (id) {
-  const [paths, m] = id.split('.')
-  const filename = path.join(PROJECT_SRC, 'action', ...paths.split('/'))
-  let action
-
-  try {
-    action = require(filename)
-  } catch (e) {
-    fail(e)
-  }
-
-  const handler = action
-    ? m
-      ? action[m]
-      : action
-    : null
-
-  if (typeof handler !== 'function') {
-    fail(`Action "${id}" is should be a function.`)
-  }
-
-  return handler
-}
-
-
-function wrap_action (action) {
-  return async ctx => {
-    debug('action: %s %s', ctx.method, ctx.path)
-
-    let data
     try {
-      data = await action(ctx)
-
+      middleware = require(filename)
     } catch (e) {
-      error(ctx, e.status, e)
-      return
+      fail(`Fails to load middleware "${id}": ${e.stack || e}`)
     }
 
-    if (ctx.body) {
-      return
+    if (typeof middleware !== 'function') {
+      fail(`Middleware "${id}" is should be a function.`)
     }
 
-    const body = {
-      code: 200
+    return middlewares[id] = middleware
+  }
+
+  _action (id) {
+    const [paths, m] = id.split('.')
+    const filename = path.join(PROJECT_SRC, 'action', ...paths.split('/'))
+    let action
+
+    try {
+      action = require(filename)
+    } catch (e) {
+      fail(e)
     }
 
-    if (data) {
-      body.data = data
+    const handler = action
+      ? m
+        ? action[m]
+        : action
+      : null
+
+    if (typeof handler !== 'function') {
+      fail(`Action "${id}" is should be a function.`)
     }
 
-    ctx.body = body
+    return handler
+  }
+
+  _wrap_action (action) {
+    return async ctx => {
+
+      let data
+      try {
+        data = await action(ctx)
+
+      } catch (e) {
+        error(ctx, e.status, e)
+        return
+      }
+
+      if (ctx.body) {
+        return
+      }
+
+      const body = {
+        code: 200
+      }
+
+      if (data) {
+        body.data = data
+      }
+
+      ctx.body = body
+    }
   }
 }
 
 
-function apply_action (router, action, method, pathname) {
-  debug('adds action: %s %s', method, pathname)
-
-  action = get_action_handler(action)
-  router[method](pathname, wrap_action(action))
-}
+module.exports = Middleware

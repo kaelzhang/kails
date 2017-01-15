@@ -9,8 +9,6 @@ module.exports = (options) => {
 // const {port} = require('../config')
 // const {apply_middlewares} = require('./middleware')
 
-// const app = new Koa()
-
 // prepare(app)
 // .then(() => {
 //   const router = create_router({middlewares, routes})
@@ -30,6 +28,8 @@ module.exports = (options) => {
 
 
 const Context = require('./context')
+const Middleware = require('./middleware')
+const Koa = require('koa')
 
 class Kails {
   constructor ({
@@ -40,6 +40,8 @@ class Kails {
 
     this._root = root
     this._context = new Context(root)
+    this._middleware = null
+    this._app = new Koa
   }
 
   // TODO
@@ -48,9 +50,10 @@ class Kails {
   // }
 
   // TODO
-  // plugin () {
-
-  // }
+  plugin (name, plugin) {
+    this._context.plugin(name, plugin)
+    return this
+  }
 
   launch () {
     return this._create()
@@ -59,7 +62,7 @@ class Kails {
   _create () {
     return this._context.create()
     .then((context) => {
-
+      this._middleware = new Middleware(this._root, context)
     })
   }
 }

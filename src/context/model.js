@@ -5,42 +5,41 @@ module.exports = {
 
 
 const Waterline = require('waterline')
+const {
+  find_models
+} = require('../util')
+const path = require('path')
 
-function setup (connections, models) {
-  const ontology = {}
-  function NOOP () {}
 
-  // Model
-  ///////////////////////////////////////////////////
+function setup () {
+  const connections = this.config.connection
+  const waterline = new Waterline()
 
-  function model (name) {
-    const model = ontology.collections[name]
-
-    return model
-  }
-
-  return new Promise((resolve, reject) => {
-    const waterline = new Waterline()
-
-    Object.keys(models).forEach((name) => {
-      load(waterline, models[name])
+  return find_models(path.join(this.root, 'model'))
+  .then((models_list) => {
+    models_list.forEach(models => {
+      load_model(waterline, models)
     })
 
-    waterline.initialize(
-      create_waterline_config(connections),
-      (err, ontology) => {
-        if (err) {
-          console.error(`Fails to connect to database: ${err}`)
-          process.exit()
+    return new Promise((resolve, reject) => {
+      waterline.initialize(
+        create_waterline_config(connections),
+        (err, ontology) => {
+          if (err) {
+            console.error(`Fails to connect to database: ${err}`)
+            process.exit()
+          }
+
+          const collections = ontology.collections
+          resolve((name) => {
+            return connections[name]
+          })
         }
-
-        resolve(ontology)
-      }
-    )
+      )
+    })
   })
+
 }
-
-
 
 
 // We have to load all schemas

@@ -7,6 +7,8 @@ const path = require('path')
 const {fail} = require('./util')
 const clone = require('clone')
 const thenify = require('simple-thenify')
+const { EventEmitter } = require('events')
+const util = require('util')
 
 const DEFAULT_CONTEXT = {
   error: require('./error'),
@@ -32,12 +34,49 @@ function setup_config (root) {
 }
 
 
+class EE extends EventEmitter {
+  constructor () {
+    super()
+    this._defaults = {}
+  }
+
+  default (name, handler) {
+    if (!util.isFunction(handler)) {
+      throw new TypeError(`default handler must be a function.`)
+    }
+
+    this._defaults[name] = handler
+    return this
+  }
+
+  emit (name, ...args) {
+    if (this.listenerCount(name) > 0) {
+      super.emit(name, ...args)
+      return
+    }
+
+    const handler = this._defaults[name]
+    if (handler) {
+      handler(...args)
+    }
+  }
+}
+
+
 class Context {
   constructor (root) {
     this._root = root
     this._plugins = {}
     this._plugins.__proto__ = DEFAULT_CONTEXT
     this._config = setup_config(root)
+
+    const _setup_context = {
+      root,
+      config: this._config
+      emitter: new EE
+    }
+
+    this._setup_context = Object.freeze(_setup_context)
   }
 
   plugin (name, plugin) {
@@ -81,14 +120,13 @@ class Context {
       } = this._plugins[key]
 
       // TODO: setup arguments
-      const task = thenify(setup)()
+      const task = thenify(setup).call(this._setup_context)
       tasks.push(task)
     }
 
     return Promise.all(tasks)
     .then(() => {
-      Object.freeze(context)
-      return context
+      return Object.freeze(context)
     })
   }
 }

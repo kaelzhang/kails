@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "co-body": "^4.2.0",
+    "globby": "^6.1.0",
     "koa": "^2",
     "koa-router": "^7",
     "sails-disk": "^0.10.10",
