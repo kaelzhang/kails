@@ -1,16 +1,19 @@
 const path = require('path')
 const util = require('util')
-const fail = require('../util/fail')
-const error = require('../util/server-error')
+const {fail} = require('../util')
+const built_in = {
+  'body-parser': require('./bory-parser')
+}
 
-const PROJECT_SRC = path.join(__dirname, '..')
-const middlewares = {}
+const BUILT_INS = Object.keys(built_in)
 
 
 class Middleware {
   constructor (root, context) {
     this._root = root
+    this._context = context
     this._cache = {}
+    this._built_in = built_in
   }
 
   apply_middleware (router, id, method = 'use', pathname) {
@@ -25,9 +28,9 @@ class Middleware {
     }
   }
 
-  apply_action (router, action, method, pathname) {
-    action = get_action_handler(action)
-    router[method](pathname, wrap_action(action))
+  apply_action (router, id, method, pathname) {
+    const action = this._action(id)
+    router[method](pathname, this._wrap_action(action))
   }
 
   _get (id) {
@@ -35,25 +38,35 @@ class Middleware {
       return this._cache[id]
     }
 
-    const filename = path.join(PROJECT_SRC, 'middleware', id)
+    const filename = path.join(this._root, 'middleware', id)
     let middleware
 
     try {
       middleware = require(filename)
     } catch (e) {
-      fail(`Fails to load middleware "${id}": ${e.stack || e}`)
+      if (e.code !== 'MODULE_NOT_FOUND' || !~BUILT_INS.indexOf(id)) {
+        fail(`Fails to load middleware "${id}": ${e.stack || e}`)
+      }
+
+      middleware = this._built_in[id]
     }
 
     if (typeof middleware !== 'function') {
       fail(`Middleware "${id}" is should be a function.`)
     }
 
-    return middlewares[id] = middleware
+    return this._cache[id] = this._wrap_middleware(middleware)
+  }
+
+  _wrap_middleware (middleware) {
+    return (ctx, next) => {
+      return middleware.call(this._context, ctx, next)
+    }
   }
 
   _action (id) {
     const [paths, m] = id.split('.')
-    const filename = path.join(PROJECT_SRC, 'action', ...paths.split('/'))
+    const filename = path.join(this._root, 'action', ...paths.split('/'))
     let action
 
     try {
@@ -77,13 +90,12 @@ class Middleware {
 
   _wrap_action (action) {
     return async ctx => {
-
       let data
       try {
-        data = await action(ctx)
+        data = await action.call(this._context, ctx)
 
       } catch (e) {
-        error(ctx, e.status, e)
+        this._context.error(ctx, e.status, e)
         return
       }
 
