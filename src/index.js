@@ -2,40 +2,15 @@ module.exports = (options) => {
   return new Kails(options)
 }
 
-// const Koa = require('koa')
-// const prepare = require('./prepare')
-// const create_router = require('./router')
-// const {middlewares, routes} = require('./routes')
-// const {port} = require('../config')
-// const {apply_middlewares} = require('./middleware')
-
-// prepare(app)
-// .then(() => {
-//   const router = create_router({middlewares, routes})
-
-//   app
-//   .use(router.routes())
-//   .use(router.allowedMethods())
-
-//   app.listen(port, () => {
-//     console.log(`\nServer started at http://localhost:${port}`)
-//   })
-// })
-// .catch((e) => {
-//   console.error(`Fails to initialize: ${e.stack || e}`)
-//   process.exit(1)
-// })
-
 
 const Context = require('./context')
 const Router = require('./router')
 const Koa = require('koa')
+const {fail} = require('./util')
 
 class Kails {
   constructor ({
-    root,
-    // preset,
-    // plugins
+    root
   }) {
 
     this._root = root
@@ -43,11 +18,6 @@ class Kails {
     this._router = null
     this._app = new Koa
   }
-
-  // TODO
-  // preset () {
-
-  // }
 
   // TODO
   plugin (name, plugin) {
@@ -59,8 +29,36 @@ class Kails {
     return this._create()
   }
 
+  _apply_events () {
+    const events_file = path.join(this._root, 'event.js')
+
+    return new Promise((resolve, reject) => {
+      fs.access(events_file, fs.constants.R_OK, err => {
+        err ? reject(err) : resolve()
+      })
+
+    }).then(
+      () => {
+        try {
+          return require(events_file)
+        } catch (e) {
+          fail('fails to read events.js')
+        }
+      },
+      err => {
+        // If file not found, then skip applying events.
+        return null
+      }
+
+    ).then((events) => {
+      for (let key in events) {
+        this._context.on(key, events[key])
+      }
+    })
+  }
+
   _create () {
-    return this._context.create()
+    const create_router = this._context.create()
     .then((context) => {
       new Router(this._root, context)
       .apply_routes()
@@ -71,6 +69,14 @@ class Kails {
           resolve()
         })
       })
+    })
+
+    const create_events = this._apply_events()
+    return Promise.all([
+      create_router,
+      create_events
+    ]).then(() => {
+
     })
   }
 }

@@ -69,11 +69,12 @@ class Context {
     this._plugins = {}
     this._plugins.__proto__ = DEFAULT_CONTEXT
     this._config = setup_config(root)
+    this._emitter = new EE
 
     const _setup_context = {
       root,
-      config: this._config
-      emitter: new EE
+      config: this._config,
+      emitter: this._emitter
     }
 
     this._setup_context = Object.freeze(_setup_context)
@@ -106,6 +107,10 @@ class Context {
     this._plugins[name] = plugin
 
     return this
+  }
+
+  on (type, handler) {
+    this._emitter.on(type, handler)
   }
 
   create () {

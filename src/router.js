@@ -4,7 +4,7 @@ const path = require('path')
 const {fail} = require('./util')
 
 
-class Router {
+module.exports = class {
   constructor (root, context) {
     this._router = new Router()
     this._root = root
@@ -61,5 +61,3 @@ class Router {
     app.use(this._router.routes())
   }
 }
-
-module.exports = Router

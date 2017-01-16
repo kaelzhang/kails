@@ -1,9 +1,9 @@
-{
-  default_name: 'redis',
-  setup: (root, config) => {
+// module.exports = {
+//   default_name: 'redis',
+//   setup: (root, config) => {
 
-  },
-  // events: {
+//   },
+//   // events: {
 
-  // }
-}
+//   // }
+// }
