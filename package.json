@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/kaelzhang/node-kails.git"
+    "url": "git://github.com/kaelzhang/kails.git"
   },
   "keywords": [
     "kails"
@@ -21,7 +21,7 @@
   "author": "kaelzhang",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kaelzhang/node-kails/issues"
+    "url": "https://github.com/kaelzhang/kails/issues"
   },
   "ava": {
     "require": "babel-register",

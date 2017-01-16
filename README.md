@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/kaelzhang/node-kails.svg?branch=master)](https://travis-ci.org/kaelzhang/node-kails)
+[![Build Status](https://travis-ci.org/kaelzhang/kails.svg?branch=master)](https://travis-ci.org/kaelzhang/kails)
 <!-- optional appveyor tst
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/kaelzhang/node-kails?branch=master&svg=true)](https://ci.appveyor.com/project/kaelzhang/node-kails)
 -->
