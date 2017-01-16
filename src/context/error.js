@@ -1,4 +1,4 @@
-function status_error (ctx, status, error) {
+function status_error (ctx, status = 500, error = {}) {
   ctx.status = status
   const body = {
     ...error
@@ -15,7 +15,7 @@ module.exports = {
     const emitter = this.emitter
     emitter.default('error', status_error)
 
-    return (ctx, status, error) => {
+    return (ctx, status = 500, error = {}) => {
       emitter.emit('error', ctx, status, error)
     }
   }

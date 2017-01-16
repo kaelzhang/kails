@@ -17,6 +17,7 @@ function setup () {
 
   return find_models(path.join(this.root, 'model'))
   .then((models_list) => {
+
     models_list.forEach(models => {
       load_model(waterline, models)
     })
@@ -31,9 +32,7 @@ function setup () {
           }
 
           const collections = ontology.collections
-          resolve((name) => {
-            return connections[name]
-          })
+          resolve(name => collections[name])
         }
       )
     })
@@ -95,6 +94,7 @@ function load_model (waterline, {
   connection = 'default',
   models
 }) {
+
   Object.keys(models).forEach((identity) => {
     const attributes = models[identity]
     const collection = Waterline.Collection.extend({

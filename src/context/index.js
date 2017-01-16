@@ -35,9 +35,10 @@ function setup_config (root) {
 
 
 class EE extends EventEmitter {
-  constructor () {
+  constructor (context) {
     super()
     this._defaults = {}
+    this._context = context
   }
 
   default (name, handler) {
@@ -45,8 +46,19 @@ class EE extends EventEmitter {
       throw new TypeError(`default handler must be a function.`)
     }
 
-    this._defaults[name] = handler
+    this._defaults[name] = this._wrap(handler)
     return this
+  }
+
+  _wrap (fn) {
+    const context = this._context
+    return (...args) => {
+      return fn.apply(context, args)
+    }
+  }
+
+  on (name, handler) {
+    return super.on(name, this._wrap(handler))
   }
 
   emit (name, ...args) {
@@ -69,8 +81,8 @@ class Context {
     this._plugins = {}
     this._plugins.__proto__ = DEFAULT_CONTEXT
     this._config = setup_config(root)
-    this._emitter = new EE
     this._context = {}
+    this._emitter = new EE(this._context)
 
     const _setup_context = {
       root,
@@ -80,10 +92,6 @@ class Context {
     }
 
     this._setup_context = Object.freeze(_setup_context)
-  }
-
-  context () {
-    return this._context
   }
 
   plugin (name, plugin) {
@@ -130,6 +138,10 @@ class Context {
 
       // TODO: setup arguments
       const task = thenify(setup).call(this._setup_context)
+      .then((plugin) => {
+        this._context[name] = plugin
+      })
+
       tasks.push(task)
     }
 

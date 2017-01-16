@@ -30,7 +30,7 @@ class Middleware {
 
   apply_action (router, id, method, pathname) {
     const action = this._action(id)
-    router[method](pathname, this._wrap_action(action))
+    router[method](pathname, action)
   }
 
   _get (id) {
@@ -59,8 +59,10 @@ class Middleware {
   }
 
   _wrap_middleware (middleware) {
+    const context = this._context
+
     return (ctx, next) => {
-      return middleware.call(this._context, ctx, next)
+      return middleware.call(context, ctx, next)
     }
   }
 
@@ -85,17 +87,20 @@ class Middleware {
       fail(`Action "${id}" is should be a function.`)
     }
 
-    return handler
+    return this._wrap_action(handler)
   }
 
   _wrap_action (action) {
+    const context = this._context
+
     return async ctx => {
       let data
       try {
-        data = await action.call(this._context, ctx)
+        data = await action.call(context, ctx)
 
       } catch (e) {
-        this._context.error(ctx, e.status, e)
+        console.log(e)
+        context.error(ctx, e.status, e)
         return
       }
 

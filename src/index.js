@@ -8,12 +8,14 @@ const Router = require('./router')
 const Koa = require('koa')
 const {fail} = require('./util')
 const path = require('path')
+const fs = require('fs')
 
 class Kails {
   constructor ({
     root
   }) {
 
+    root = path.resolve(root)
     this._root = root
     this._context = new Context(root)
     this._router = null
@@ -31,7 +33,7 @@ class Kails {
   }
 
   _apply_events () {
-    const events_file = path.join(this._root, 'event.js')
+    const events_file = path.join(this._root, 'events.js')
 
     return new Promise((resolve, reject) => {
       fs.access(events_file, fs.constants.R_OK, err => {
@@ -46,10 +48,9 @@ class Kails {
           fail('fails to read events.js')
         }
       },
-      err => {
-        // If file not found, then skip applying events.
-        return null
-      }
+
+      // If file not found, then skip applying events.
+      err => null
 
     ).then((events) => {
       for (let key in events) {
@@ -66,7 +67,7 @@ class Kails {
       .apply(this._app)
 
       return new Promise((resolve) => {
-        this._app.listen(this._context.context().config.port, () => {
+        this._app.listen(context.config.port, () => {
           resolve()
         })
       })
