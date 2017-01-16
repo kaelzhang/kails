@@ -1,6 +1,6 @@
 {
   "name": "kails",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "description": "Koa 2+ on Rails.",
   "main": "index.js",
   "scripts": {
