@@ -4,7 +4,7 @@ module.exports = (root) => {
 
 
 const path = require('path')
-const {fail} = require('./util')
+const {fail} = require('../util')
 const clone = require('clone')
 const thenify = require('simple-thenify')
 const { EventEmitter } = require('events')
@@ -70,14 +70,20 @@ class Context {
     this._plugins.__proto__ = DEFAULT_CONTEXT
     this._config = setup_config(root)
     this._emitter = new EE
+    this._context = {}
 
     const _setup_context = {
       root,
       config: this._config,
-      emitter: this._emitter
+      emitter: this._emitter,
+      context: this._context
     }
 
     this._setup_context = Object.freeze(_setup_context)
+  }
+
+  context () {
+    return this._context
   }
 
   plugin (name, plugin) {
@@ -114,15 +120,13 @@ class Context {
   }
 
   create () {
-    const context = {
-      config: this._config
-    }
+    this._context.config = this._config
     const tasks = []
 
     for (let name in this._plugins) {
       const {
         setup
-      } = this._plugins[key]
+      } = this._plugins[name]
 
       // TODO: setup arguments
       const task = thenify(setup).call(this._setup_context)
@@ -131,7 +135,7 @@ class Context {
 
     return Promise.all(tasks)
     .then(() => {
-      return Object.freeze(context)
+      return Object.freeze(this._context)
     })
   }
 }

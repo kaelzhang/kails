@@ -2,7 +2,7 @@ const path = require('path')
 const util = require('util')
 const {fail} = require('../util')
 const built_in = {
-  'body-parser': require('./bory-parser')
+  'body-parser': require('./body-parser')
 }
 
 const BUILT_INS = Object.keys(built_in)

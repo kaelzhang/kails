@@ -8,7 +8,7 @@ module.exports = class {
   constructor (root, context) {
     this._router = new Router()
     this._root = root
-    tihs._context = context
+    this._context = context
     this._middleware = new Middleware(root, context)
   }
 
@@ -48,10 +48,12 @@ module.exports = class {
       method = method.toLowerCase()
 
       ;[].concat(common_middlewares, middlewares).forEach((middleware) => {
-        this._middleware.apply_middleware(router, middleware, method, pathname)
+        this._middleware.apply_middleware(
+          this._router, middleware, method, pathname)
       })
 
-      this._middleware.apply_action(router, action, method, pathname)
+      this._middleware.apply_action(
+        this._router, action, method, pathname)
     })
 
     return this

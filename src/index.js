@@ -7,6 +7,7 @@ const Context = require('./context')
 const Router = require('./router')
 const Koa = require('koa')
 const {fail} = require('./util')
+const path = require('path')
 
 class Kails {
   constructor ({
@@ -65,7 +66,7 @@ class Kails {
       .apply(this._app)
 
       return new Promise((resolve) => {
-        this._app.listen(this._context.config.port, () => {
+        this._app.listen(this._context.context().config.port, () => {
           resolve()
         })
       })

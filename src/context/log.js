@@ -1,6 +1,6 @@
 module.exports = {
   reserved: true,
-  setup: () => {
+  setup () {
     const emitter = this.emitter
     emitter.default('log', (level, message) => {
       console.log(level, message)

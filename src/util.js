@@ -20,7 +20,7 @@ function fail (message = 'fatal error.', code = 1) {
 
 function ls (dir) {
   return globby('*.js', {
-    cwd: model_dir
+    cwd: dir
   })
 }
 

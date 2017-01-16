@@ -11,6 +11,7 @@ const path = require('path')
 
 
 function setup () {
+  const service_factories = {}
   const services = {}
   const service_dir = path.join(this.root, 'service')
 
@@ -21,7 +22,7 @@ function setup () {
       file = path.join(service_dir, file)
 
       try {
-        services[name] = require(file)
+        service_factories[name] = require(file)
       } catch (e) {
         return Promise.reject(e)
       }
@@ -31,7 +32,17 @@ function setup () {
   })
   .then(() => {
     return (name) => {
-      return services[name]
+      const service = services[name]
+      if (service) {
+        return service
+      }
+
+      const factory = service_factories[name]
+      if (!factory) {
+        return
+      }
+
+      return services[name] = factory(this.context)
     }
   })
 }

@@ -11,7 +11,7 @@ function status_error (ctx, status, error) {
 
 module.exports = {
   reserved: true,
-  setup: () => {
+  setup () {
     const emitter = this.emitter
     emitter.default('error', status_error)
 
