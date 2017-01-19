@@ -95,6 +95,10 @@ function load_model (waterline, {
   models
 }) {
 
+  if (!models) {
+    return
+  }
+
   Object.keys(models).forEach((identity) => {
     const attributes = models[identity]
     const collection = Waterline.Collection.extend({
