@@ -1,4 +1,5 @@
 const path = require('path')
+const fs = require('fs')
 const util = require('util')
 const {fail} = require('../util')
 const built_in = {
@@ -7,7 +8,9 @@ const built_in = {
 
 const BUILT_INS = Object.keys(built_in)
 
-
+// TODO
+// 1. root configuration for middleware, action, or template
+// 2. template engine settings
 class Middleware {
   constructor (root, context) {
     this._root = root
@@ -25,6 +28,26 @@ class Middleware {
       router[method](pathname, middleware)
     } else {
       router[method](middleware)
+    }
+  }
+
+  apply_template (router, id, pathname) {
+    router.get(pathname, this._template(id))
+  }
+
+  _template (id) {
+    const filepath = path.join(this._root, 'public', id)
+    let body
+
+    try {
+      body = fs.readFileSync(filepath).toString()
+    } catch (e) {
+      fail(`Fails to read template "${id}": ${e.stack || e}`)
+    }
+
+    return (ctx, next) => {
+      ctx.type = 'text/html'
+      ctx.body = body
     }
   }
 

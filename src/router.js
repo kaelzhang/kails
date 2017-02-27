@@ -32,6 +32,7 @@ module.exports = class {
       const config = routes[location]
       const {
         action,
+        template,
         auth = true,
         middlewares = []
 
@@ -51,6 +52,11 @@ module.exports = class {
         this._middleware.apply_middleware(
           this._router, middleware, method, pathname)
       })
+
+      if (template) {
+        this._middleware.apply_template(this._router, template, pathname)
+        return
+      }
 
       this._middleware.apply_action(
         this._router, action, method, pathname)
