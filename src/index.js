@@ -14,9 +14,11 @@ const clone = require('clone')
 class Kails {
   constructor ({
     root,
+
     config,
     routes,
     events,
+
     template_root,
     action_root,
     model_root,
@@ -25,6 +27,7 @@ class Kails {
   }) {
 
     this._root = root = path.resolve(root)
+
     this._config = config = clone(this._get_config(config))
     this._events = events = this._get_events(events)
     this._routes = routes = this._get_routes(routes)
@@ -33,11 +36,12 @@ class Kails {
     service_root = this._ensure_root(service_root, 'service')
     action_root = this._ensure_root(action_root, 'action')
     template_root = this._ensure_root(template_root, 'template')
+    middleware_root = this._ensure_root(middleware_root, 'middleware')
 
     this._context = new Context({
       config,
       model_root,
-      service_root,
+      service_root
     })
 
     this._app = new Koa
@@ -63,7 +67,7 @@ class Kails {
     const file = this._path(type)
 
     try {
-      require(file)
+      return require(file)
     } catch (e) {
       if (allow_not_found && e.code === 'MODULE_NOT_FOUND') {
         return {}

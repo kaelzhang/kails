@@ -27,8 +27,9 @@ module.exports = class {
 
   apply_routes () {
     const common_middlewares = this._context.config.middlewares || []
+    const routes = this._routes
 
-    Object.keys(this._routes).forEach((location) => {
+    Object.keys(routes).forEach((location) => {
       let [
         method,
         pathname

@@ -45,7 +45,7 @@ class Middleware {
   }
 
   _template (id) {
-    const filepath = path.join(this._template_root, 'public', id)
+    const filepath = path.join(this._template_root, id)
     let body
 
     try {
@@ -70,7 +70,7 @@ class Middleware {
       return this._cache[id]
     }
 
-    const filename = path.join(this._middleware_root, 'middleware', id)
+    const filename = path.join(this._middleware_root, id)
     let middleware
 
     try {
@@ -102,7 +102,6 @@ class Middleware {
     const [paths, m] = id.split('.')
     const filename = path.join(
       this._action_root,
-      'action',
       ...paths.split('/'))
 
     let action
