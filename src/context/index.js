@@ -1,11 +1,5 @@
-module.exports = (root) => {
-  return new Context(root)
-}
-
-
 const path = require('path')
 const {fail} = require('../util')
-const clone = require('clone')
 const thenify = require('simple-thenify')
 const { EventEmitter } = require('events')
 const util = require('util')
@@ -18,22 +12,7 @@ const DEFAULT_CONTEXT = {
 }
 
 
-function setup_config (root) {
-  let config
-  const config_path = path.join(root, 'config')
-
-  try {
-    config = require(config_path)
-  } catch (e) {
-    const error = new Error(`fails to read config: ${e.message}`)
-    error.stack = e.stack
-    return Promise.reject(error)
-  }
-
-  return clone(config)
-}
-
-
+//
 class EE extends EventEmitter {
   constructor (context) {
     super()
@@ -75,17 +54,23 @@ class EE extends EventEmitter {
 }
 
 
-class Context {
-  constructor (root) {
-    this._root = root
+module.exports = class Context {
+  constructor ({
+    root
+    config,
+    model_root,
+    service_root
+  }) {
+
     this._plugins = {}
     this._plugins.__proto__ = DEFAULT_CONTEXT
-    this._config = setup_config(root)
+    this._config = config
     this._context = {}
     this._emitter = new EE(this._context)
 
     const _setup_context = {
-      root,
+      model_root,
+      service_root,
       config: this._config,
       emitter: this._emitter,
       context: this._context

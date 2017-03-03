@@ -13,7 +13,7 @@ const path = require('path')
 function setup () {
   const service_factories = {}
   const services = {}
-  const service_dir = path.join(this.root, 'service')
+  const service_dir = this.service_root
 
   return ls(service_dir)
   .then(files => {

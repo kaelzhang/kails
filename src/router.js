@@ -5,25 +5,30 @@ const {fail} = require('./util')
 
 
 module.exports = class {
-  constructor (root, context) {
+  constructor ({
+    routes,
+    template_root,
+    action_root,
+    middleware_root,
+    context
+  }) {
+
     this._router = new Router()
-    this._root = root
+    this._routes = routes
     this._context = context
-    this._middleware = new Middleware(root, context)
+
+    this._middleware = new Middleware({
+      template_root,
+      action_root,
+      middleware_root,
+      context
+    })
   }
 
   apply_routes () {
     const common_middlewares = this._context.config.middlewares || []
-    const routes_file = path.join(this._root, 'routes')
 
-    let routes
-    try {
-      routes = require(routes_file)
-    } catch (e) {
-      fail(e)
-    }
-
-    Object.keys(routes).forEach((location) => {
+    Object.keys(this._routes).forEach((location) => {
       let [
         method,
         pathname

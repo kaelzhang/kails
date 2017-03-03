@@ -15,7 +15,7 @@ function setup () {
   const connections = this.config.connection
   const waterline = new Waterline()
 
-  return find_models(path.join(this.root, 'model'))
+  return find_models(this.model_root)
   .then((models_list) => {
 
     models_list.forEach(models => {

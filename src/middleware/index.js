@@ -12,8 +12,17 @@ const BUILT_INS = Object.keys(built_in)
 // 1. root configuration for middleware, action, or template
 // 2. template engine settings
 class Middleware {
-  constructor (root, context) {
-    this._root = root
+  constructor ({
+    template_root,
+    action_root,
+    middleware_root,
+    context
+  }) {
+
+    this._template_root = template_root
+    this._action_root = action_root
+    this._middleware_root = middleware_root
+
     this._context = context
     this._cache = {}
     this._built_in = built_in
@@ -36,7 +45,7 @@ class Middleware {
   }
 
   _template (id) {
-    const filepath = path.join(this._root, 'public', id)
+    const filepath = path.join(this._template_root, 'public', id)
     let body
 
     try {
@@ -61,7 +70,7 @@ class Middleware {
       return this._cache[id]
     }
 
-    const filename = path.join(this._root, 'middleware', id)
+    const filename = path.join(this._middleware_root, 'middleware', id)
     let middleware
 
     try {
@@ -91,7 +100,11 @@ class Middleware {
 
   _action (id) {
     const [paths, m] = id.split('.')
-    const filename = path.join(this._root, 'action', ...paths.split('/'))
+    const filename = path.join(
+      this._action_root,
+      'action',
+      ...paths.split('/'))
+
     let action
 
     try {
