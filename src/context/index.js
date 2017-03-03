@@ -56,7 +56,6 @@ class EE extends EventEmitter {
 
 module.exports = class Context {
   constructor ({
-    root
     config,
     model_root,
     service_root

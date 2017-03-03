@@ -29,10 +29,10 @@ class Kails {
     this._events = events = this._get_events(events)
     this._routes = routes = this._get_routes(routes)
 
-    model_root = this._ensure_root('model')
-    service_root = this._ensure_root('service')
-    action_root = this._ensure_root('action')
-    template_root = this._ensure_root('template')
+    model_root = this._ensure_root(model_root, 'model')
+    service_root = this._ensure_root(service_root, 'service')
+    action_root = this._ensure_root(action_root, 'action')
+    template_root = this._ensure_root(template_root, 'template')
 
     this._context = new Context({
       config,
@@ -47,8 +47,8 @@ class Kails {
     return path.join(this._root, type)
   }
 
-  _ensure_root (type) {
-    return this[`_${type}_root`] = this._path(type)
+  _ensure_root (value, type) {
+    return this[`_${type}_root`] = value || this._path(type)
   }
 
   _ensure (value, type, allow_not_found) {
@@ -63,16 +63,14 @@ class Kails {
     const file = this._path(type)
 
     try {
-      fs.accessSync(file, 'r')
+      require(file)
     } catch (e) {
-      if (allow_not_found && e.code === 'ENOENT') {
+      if (allow_not_found && e.code === 'MODULE_NOT_FOUND') {
         return {}
       }
 
       throw e
     }
-
-    return require(file)
   }
 
   _get_config (config) {
@@ -123,12 +121,18 @@ class Kails {
   _create_router () {
     return this._context.create()
     .then((context) => {
-      new Router(this._root, context)
+      new Router({
+        routes: this._routes,
+        template_root: this._template_root,
+        action_root: this._action_root,
+        middleware_root: this._middleware_root,
+        context
+      })
       .apply_routes()
       .apply(this._app)
 
       return new Promise((resolve) => {
-        this._app.listen(context.config.port, () => {
+        this._app.listen(this._config.port, () => {
           resolve()
         })
       })

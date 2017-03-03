@@ -1,0 +1,7 @@
+{
+  plugins: [
+    'syntax-trailing-function-commas',
+    'transform-object-rest-spread',
+    'transform-class-properties'
+  ]
+}
