@@ -60,7 +60,7 @@ class Kails {
 
   _ensure (value, type, allow_not_found) {
     if (value) {
-      if (Object(value) === value) {
+      if (Object(value) !== value) {
         fail(`${type} must be an object, but ${value} encountered.`)
       }
 
