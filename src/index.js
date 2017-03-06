@@ -45,6 +45,9 @@ class Kails {
     })
 
     this._app = new Koa
+    this._uses = []
+
+    this._processing = null
   }
 
   _path (type) {
@@ -110,8 +113,15 @@ class Kails {
     return this
   }
 
-  launch () {
-    return this._create()
+  use (...args) {
+    this._uses.push(args)
+    return this
+  }
+
+  _apply_uses () {
+    this._uses.forEach(args => {
+      this._app.use(...args)
+    })
   }
 
   _create_events () {
@@ -135,16 +145,27 @@ class Kails {
       .apply_routes()
       .apply(this._app)
 
-      return new Promise((resolve) => {
-        this._app.listen(this._config.port, () => {
-          resolve()
-        })
-      })
+      this._apply_uses()
     })
   }
 
   _create () {
+    if (this._processing) {
+      return this._processing
+    }
+
     this._create_events()
-    return this._create_router()
+    return this._processing = this._create_router()
+  }
+
+  listen (port) {
+    return this._create()
+    .then(() => {
+      return new Promise((resolve) => {
+        this._app.listen(port || this._config.port, () => {
+          resolve()
+        })
+      })
+    })
   }
 }
