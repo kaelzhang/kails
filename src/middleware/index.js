@@ -8,6 +8,14 @@ const built_in = {
 
 const BUILT_INS = Object.keys(built_in)
 
+function render_template (template, data = {}) {
+  if (typeof template === 'function') {
+    return template(data)
+  }
+
+  return template
+}
+
 // TODO
 // 1. root configuration for middleware, action, or template
 // 2. template engine settings
@@ -22,6 +30,7 @@ class Middleware {
 
     this._template_root = template_root
     this._get_template = get_template
+
     this._action_root = action_root
     this._middleware_root = middleware_root
 
@@ -48,26 +57,55 @@ class Middleware {
 
   _template (id) {
     const filepath = path.join(this._template_root, id)
-    const get = this._get_template
+    const context = this._context
 
-    async function template (ctx, next) {
+    return async ctx => {
       ctx.type = 'text/html'
 
       try {
-        const body = await get(filepath)
-        ctx.body = body.toString()
+        const template = await this._get_template(filepath)
+        ctx.body = render_template(template)
 
       } catch (e) {
-        e.message = `Fails to read template "${id}": ${e.message}`
-        this.error(ctx, e.code === 'ENOENT'
+        context.error(ctx, e.code === 'ENOENT'
           ? 404
           : 500,
           e)
       }
     }
+  }
 
-    return (ctx, next) => {
-      return template.call(this._context, ctx, next)
+  apply_template_with_action (router, template_id, action_id, pathname) {
+    router.get(pathname, this._template_with_action(template_id, action_id))
+  }
+
+  _template_with_action (template_id, action_id) {
+    const action = this._get_raw_action(action_id)
+    const filepath = path.join(this._template_root, template_id)
+    const context = this._context
+
+    return async ctx => {
+      let template
+      try {
+        template = await this._get_template(filepath)
+      } catch (e) {
+        context.error(ctx, e.status, e)
+        return
+      }
+
+      if (typeof template !== 'function') {
+        return template
+      }
+
+      let data
+      try {
+        data = await action.call(context, ctx)
+      } catch (e) {
+        context.error(ctx, e.status, e)
+        return
+      }
+
+      ctx.body = render_template(template, data)
     }
   }
 
@@ -109,7 +147,7 @@ class Middleware {
     }
   }
 
-  _action (id) {
+  _get_raw_action (id) {
     const [paths, m] = id.split('.')
     const filename = path.join(
       this._action_root,
@@ -133,7 +171,11 @@ class Middleware {
       fail(`Action "${id}" is should be a function.`)
     }
 
-    return this._wrap_action(handler)
+    return handler
+  }
+
+  _action (id) {
+    return this._wrap_action(this._get_raw_action(id))
   }
 
   _wrap_action (action) {
@@ -145,7 +187,6 @@ class Middleware {
         data = await action.call(context, ctx)
 
       } catch (e) {
-        console.log(e)
         context.error(ctx, e.status, e)
         return
       }

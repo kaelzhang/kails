@@ -3,6 +3,8 @@ const Middleware = require('./middleware')
 const path = require('path')
 const {fail} = require('./util')
 
+const STR_GET = 'GET'
+
 
 module.exports = class {
   constructor ({
@@ -27,6 +29,19 @@ module.exports = class {
     })
   }
 
+  _split_location (location) {
+    const [
+      method,
+      pathname
+    ] = location.split(' ').map(x => x.trim())
+
+    if (!pathname) {
+      return [STR_GET, method]
+    }
+
+    return [method, pathname]
+  }
+
   apply_routes () {
     const common_middlewares = this._context.config.middlewares || []
     const routes = this._routes
@@ -35,7 +50,7 @@ module.exports = class {
       let [
         method,
         pathname
-      ] = location.split(' ')
+      ] = this._split_location(location)
 
       const config = routes[location]
       const {
@@ -60,6 +75,21 @@ module.exports = class {
         this._middleware.apply_middleware(
           this._router, middleware, method, pathname)
       })
+
+      if (template && action) {
+        this._middleware.apply_template_with_action(
+          this._router, template, action, pathname)
+        return
+      }
+
+      if (!template && !action) {
+        const location = [
+          method,
+          pathname
+        ].join(' ')
+
+        fail(`template or action is required for "${location}"`)
+      }
 
       if (template) {
         this._middleware.apply_template(this._router, template, pathname)
