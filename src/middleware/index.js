@@ -14,12 +14,14 @@ const BUILT_INS = Object.keys(built_in)
 class Middleware {
   constructor ({
     template_root,
+    get_template,
     action_root,
     middleware_root,
     context
   }) {
 
     this._template_root = template_root
+    this._get_template = get_template
     this._action_root = action_root
     this._middleware_root = middleware_root
 
@@ -46,17 +48,26 @@ class Middleware {
 
   _template (id) {
     const filepath = path.join(this._template_root, id)
-    let body
+    const get = this._get_template
 
-    try {
-      body = fs.readFileSync(filepath).toString()
-    } catch (e) {
-      fail(`Fails to read template "${id}": ${e.stack || e}`)
+    async function template (ctx, next) {
+      ctx.type = 'text/html'
+
+      try {
+        const body = await get(filepath)
+        ctx.body = body.toString()
+        console.log(ctx.body)
+      } catch (e) {
+        e.message = `Fails to read template "${id}": ${e.message}`
+        this.error(ctx, e.code === 'ENOENT'
+          ? 404
+          : 500,
+          e)
+      }
     }
 
     return (ctx, next) => {
-      ctx.type = 'text/html'
-      ctx.body = body
+      return template.call(this._context, ctx, next)
     }
   }
 

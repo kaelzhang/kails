@@ -20,6 +20,7 @@ class Kails {
     events,
 
     template_root,
+    get_template,
     action_root,
     model_root,
     service_root,
@@ -31,6 +32,8 @@ class Kails {
     this._config = config = clone(this._get_config(config))
     this._events = events = this._get_events(events)
     this._routes = routes = this._get_routes(routes)
+
+    this._get_template = get_template
 
     model_root = this._ensure_root(model_root, 'model')
     service_root = this._ensure_root(service_root, 'service')
@@ -138,6 +141,7 @@ class Kails {
       new Router({
         routes: this._routes,
         template_root: this._template_root,
+        get_template: this._get_template,
         action_root: this._action_root,
         middleware_root: this._middleware_root,
         context

@@ -8,6 +8,7 @@ module.exports = class {
   constructor ({
     routes,
     template_root,
+    get_template,
     action_root,
     middleware_root,
     context
@@ -19,6 +20,7 @@ module.exports = class {
 
     this._middleware = new Middleware({
       template_root,
+      get_template,
       action_root,
       middleware_root,
       context
