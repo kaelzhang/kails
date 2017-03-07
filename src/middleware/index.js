@@ -56,7 +56,7 @@ class Middleware {
       try {
         const body = await get(filepath)
         ctx.body = body.toString()
-        console.log(ctx.body)
+
       } catch (e) {
         e.message = `Fails to read template "${id}": ${e.message}`
         this.error(ctx, e.code === 'ENOENT'
