@@ -11,6 +11,7 @@ module.exports = class {
     routes,
     template_root,
     get_template,
+    default_template_data,
     action_root,
     middleware_root,
     context
@@ -23,6 +24,7 @@ module.exports = class {
     this._middleware = new Middleware({
       template_root,
       get_template,
+      default_template_data,
       action_root,
       middleware_root,
       context

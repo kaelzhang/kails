@@ -20,6 +20,7 @@ class Kails {
     events,
 
     template_root,
+    default_template_data = {},
     get_template,
     action_root,
     model_root,
@@ -34,6 +35,7 @@ class Kails {
     this._routes = routes = this._get_routes(routes)
 
     this._get_template = get_template
+    this._default_template_data = default_template_data
 
     model_root = this._ensure_root(model_root, 'model')
     service_root = this._ensure_root(service_root, 'service')
@@ -142,6 +144,7 @@ class Kails {
         routes: this._routes,
         template_root: this._template_root,
         get_template: this._get_template,
+        default_template_data: this._default_template_data,
         action_root: this._action_root,
         middleware_root: this._middleware_root,
         context

@@ -8,13 +8,6 @@ const built_in = {
 
 const BUILT_INS = Object.keys(built_in)
 
-function render_template (template, data = {}) {
-  if (typeof template === 'function') {
-    return template(data)
-  }
-
-  return template
-}
 
 // TODO
 // 1. root configuration for middleware, action, or template
@@ -23,6 +16,7 @@ class Middleware {
   constructor ({
     template_root,
     get_template,
+    default_template_data,
     action_root,
     middleware_root,
     context
@@ -30,6 +24,7 @@ class Middleware {
 
     this._template_root = template_root
     this._get_template = get_template
+    this._default_template_data = default_template_data
 
     this._action_root = action_root
     this._middleware_root = middleware_root
@@ -37,6 +32,16 @@ class Middleware {
     this._context = context
     this._cache = {}
     this._built_in = built_in
+  }
+
+  _render_template (template, data) {
+    if (typeof template === 'function') {
+      return template(data
+        ? Object.assign({}, this._default_template_data, data)
+        : this._default_template_data)
+    }
+
+    return template
   }
 
   apply_middleware (router, id, method = 'use', pathname) {
@@ -64,7 +69,7 @@ class Middleware {
 
       try {
         const template = await this._get_template(filepath)
-        ctx.body = render_template(template)
+        ctx.body = this._render_template(template)
 
       } catch (e) {
         context.error(ctx, e.code === 'ENOENT'
@@ -105,7 +110,7 @@ class Middleware {
         return
       }
 
-      ctx.body = render_template(template, data)
+      ctx.body = this._render_template(template, data)
     }
   }
 
