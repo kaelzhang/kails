@@ -58,7 +58,6 @@ module.exports = class {
       const {
         action,
         template,
-        auth = true,
         middlewares = []
 
       } = typeof config === 'string'
@@ -66,10 +65,6 @@ module.exports = class {
           action: config
         }
         : config
-
-      if (auth) {
-        middlewares.unshift('need-auth')
-      }
 
       method = method.toLowerCase()
 
