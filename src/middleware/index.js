@@ -46,7 +46,7 @@ class Middleware {
 
   apply_middleware (router, id, method = 'use', pathname) {
     const middleware = util.isFunction(id)
-      ? id
+      ? this._wrap_middleware(id)
       : this._get(id)
 
     if (pathname) {
@@ -147,8 +147,13 @@ class Middleware {
   _wrap_middleware (middleware) {
     const context = this._context
 
-    return (ctx, next) => {
-      return middleware.call(context, ctx, next)
+    return async (ctx, next) => {
+      try {
+        return await middleware.call(context, ctx, next)
+
+      } catch (e) {
+        context.error(ctx, e.status, e)
+      }
     }
   }
 
