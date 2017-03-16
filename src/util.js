@@ -1,7 +1,8 @@
 module.exports = {
   fail,
   find_models,
-  ls
+  ls,
+  r
 }
 
 const globby = require('globby')
