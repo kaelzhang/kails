@@ -31,7 +31,7 @@ function find_models (model_dir) {
       file = path.join(model_dir, file)
 
       try {
-        return Promise.resolve(require(file))
+        return Promise.resolve(r(file))
       } catch (e) {
         const error = new Error(
           `fails to get model from "${file}": ${e.message}`)
@@ -42,4 +42,13 @@ function find_models (model_dir) {
 
     return Promise.all(tasks)
   })
+}
+
+
+// Handles esModule
+function r (id) {
+  const exports_ = require(id)
+  return !exports_ || !exports_.__esModule
+    ? exports_
+    : exports_.default
 }

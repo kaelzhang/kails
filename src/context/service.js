@@ -4,9 +4,7 @@ module.exports = {
 }
 
 
-const {
-  ls
-} = require('../util')
+const {ls, r} = require('../util')
 const path = require('path')
 
 
@@ -22,7 +20,7 @@ function setup () {
       file = path.join(service_dir, file)
 
       try {
-        service_factories[name] = require(file)
+        service_factories[name] = r(file)
       } catch (e) {
         return Promise.reject(e)
       }

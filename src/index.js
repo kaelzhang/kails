@@ -6,7 +6,7 @@ module.exports = (options) => {
 const Context = require('./context')
 const Router = require('./router')
 const Koa = require('koa')
-const {fail} = require('./util')
+const {fail, r} = require('./util')
 const path = require('path')
 const fs = require('fs')
 const clone = require('clone')
@@ -75,7 +75,7 @@ class Kails {
     const file = this._path(type)
 
     try {
-      return require(file)
+      return r(file)
     } catch (e) {
       if (allow_not_found && e.code === 'MODULE_NOT_FOUND') {
         return {}

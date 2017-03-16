@@ -1,7 +1,7 @@
 const path = require('path')
 const fs = require('fs')
 const util = require('util')
-const {fail} = require('../util')
+const {fail, r} = require('../util')
 const built_in = {
   'body-parser': require('./body-parser')
 }
@@ -128,7 +128,7 @@ class Middleware {
     let middleware
 
     try {
-      middleware = require(filename)
+      middleware = r(filename)
     } catch (e) {
       if (e.code !== 'MODULE_NOT_FOUND' || !~BUILT_INS.indexOf(id)) {
         fail(`Fails to load middleware "${id}": ${e.stack || e}`)
@@ -166,7 +166,7 @@ class Middleware {
     let action
 
     try {
-      action = require(filename)
+      action = r(filename)
     } catch (e) {
       fail(e)
     }
