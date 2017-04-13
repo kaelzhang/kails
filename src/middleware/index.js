@@ -190,7 +190,6 @@ class Middleware {
       ctx.body = body
     }
   }
-  }
 
   _get_raw_action (id) {
     const [paths, m] = id.split('.')
