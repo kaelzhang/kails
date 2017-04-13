@@ -39,6 +39,7 @@
   "dependencies": {
     "clone": "^2.1.0",
     "co-body": "^4.2.0",
+    "debug": "^2.6.3",
     "globby": "^6.1.0",
     "koa": "^2",
     "koa-router": "^7",
