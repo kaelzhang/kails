@@ -120,7 +120,7 @@ module.exports = class Context {
       } = this._plugins[name]
 
       // TODO: setup arguments
-      const task = thenify(setup).call(this._setup_context)
+      const task = Promise.resolve(setup.call(this._setup_context))
       .then((plugin) => {
         this._context[name] = plugin
       })
