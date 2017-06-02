@@ -7,8 +7,7 @@ const util = require('util')
 const DEFAULT_CONTEXT = {
   error: require('./error'),
   log: require('./log'),
-  service: require('./service'),
-  model: require('./model')
+  service: require('./service')
 }
 
 
