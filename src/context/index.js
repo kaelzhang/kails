@@ -1,6 +1,5 @@
 const path = require('path')
 const {fail} = require('../util')
-const thenify = require('simple-thenify')
 const { EventEmitter } = require('events')
 const util = require('util')
 
