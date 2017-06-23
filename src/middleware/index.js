@@ -1,6 +1,5 @@
 const path = require('path')
 const fs = require('fs')
-const util = require('util')
 const {fail, r} = require('../util')
 const built_in = {
   'body-parser': require('./body-parser')
@@ -40,10 +39,7 @@ class Middleware {
   }
 
   _middleware (id, method, pathname = STR_UNSPECIFIED_PATHNAME) {
-    const middleware = util.isFunction(id)
-      ? id
-      : this._get_raw_middleware(id)
-
+    const middleware = this._get_raw_middleware(id)
     const context = this._context
 
     return async (ctx, next) => {
@@ -61,6 +57,10 @@ class Middleware {
 
   // Get the middleware function
   _get_raw_middleware (id) {
+    if (typeof id === 'function') {
+      return id
+    }
+
     if (id in this._cache) {
       return this._cache[id]
     }
@@ -192,6 +192,10 @@ class Middleware {
   }
 
   _get_raw_action (id) {
+    if (typeof id === 'function') {
+      return id
+    }
+
     const [paths, m] = id.split('.')
     const filename = path.join(
       this._action_root,
